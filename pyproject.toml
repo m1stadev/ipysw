@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "ipysw"
+version = "0.1"
+description = "A Python library/CLI tool for interacting with the IPSW Downloads API"
+authors = ["m1stadev <adamhamdi31@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/m1stadev/ipysw"
+
+[tool.poetry.scripts]
+ipysw = "ipysw.__main__:cli"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ipsw-parser = "^1.2.0"
+click = "^8.1.7"
+requests = "^2.31.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.9.1"
+isort = "^5.12.0"
+pytest = "^7.4.2"
+
+[tool.black]
+skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+src_paths = ["ipysw"]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/m1stadev/ipysw/issues"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
