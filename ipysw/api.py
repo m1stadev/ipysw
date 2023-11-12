@@ -82,14 +82,15 @@ class Device(_API):
         if version is None and buildid is None:
             raise ValueError('Either firmware version or buildid must be provided.')
 
-        api_data = _API().json_request(
-            get_url(GET_DEVICE_IPSWS, identifier=self.identifier)  # noqa: F405
-        )
-        firmwares = api_data['firmwares']
-
         if version:
+            api_data = self.json_request(
+                get_url(GET_DEVICE_IPSWS, identifier=self.identifier)  # noqa: F405
+            )
+
             firmwares = [
-                firmware for firmware in firmwares if version == firmware['version']
+                firmware
+                for firmware in api_data['firmwares']
+                if version == firmware['version']
             ]
             match len(firmwares):
                 case 0:
@@ -102,13 +103,9 @@ class Device(_API):
                     )
 
         elif buildid:
-            try:
-                firmware = next(
-                    firmware
-                    for firmware in firmwares
-                    if buildid.casefold() == firmware['buildid'].casefold()
-                )
-            except StopIteration:
-                raise ValueError(f'No firmware found with buildid {buildid}')
+            firmware = self.json_request(
+                get_url(GET_IPSW_INFO, identifier=self.identifier, buildid=buildid)  # noqa: F405
+            )
 
+        # TODO: Write a separate class for IPSW, store ipsw_parser.IPSW in it as an attribute
         return IPSW(RemoteZip(firmware['url'], session=self._session))
