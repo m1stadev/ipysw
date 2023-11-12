@@ -16,7 +16,15 @@ class APIEndpointArgType(IntEnum):
     VERSION = 8
 
 
-@dataclass
+@dataclass(frozen=True)
+class BoardVariant:
+    boardconfig: str
+    platform: str
+    cpid: int
+    bdid: int
+
+
+@dataclass(frozen=True)
 class APIEndpoint:
     endpoint: str
     arg_type: APIEndpointArgType
