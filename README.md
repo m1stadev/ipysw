@@ -32,6 +32,7 @@ A Python library/CLI tool for interacting with the <a href="https://ipsw.me">IPS
 - Write CLI
 - Write documentation
 - Write tests
+- Add logging
 
 ## Support
 
