@@ -11,7 +11,7 @@ class APIEndpointArgType(IntEnum):
     IDENTIFIER_BUILDID = 3
     #    ITUNES_PLATFORM = 4
     #    ITUNES_PLATFORM_VERSION = 5
-    MODEL = 6
+    #    MODEL = 6
     PLATFORM_VERSION = 7
     VERSION = 8
 
@@ -30,7 +30,9 @@ class APIEndpoint:
     arg_type: APIEndpointArgType
 
 
-GET_MODEL_IDENTIFIER = APIEndpoint('/model/{model}', APIEndpointArgType.MODEL)
+# Seemingly doesn't work for newer model numbers??
+# GET_MODEL_IDENTIFIER = APIEndpoint('/model/{model}', APIEndpointArgType.MODEL)
+
 GET_DEVICES = APIEndpoint('/devices', APIEndpointArgType.NONE)
 
 GET_DEVICE_INFO = APIEndpoint('/device/{identifier}', APIEndpointArgType.IDENTIFIER)
@@ -69,8 +71,8 @@ def get_url(endpoint: APIEndpoint, **kwargs) -> str:
                 endpoint = endpoint.endpoint.format(
                     identifier=kwargs['identifier'], buildid=kwargs['buildid']
                 )
-            case APIEndpointArgType.MODEL:
-                endpoint = endpoint.endpoint.format(model=kwargs['model'])
+            #            case APIEndpointArgType.MODEL:
+            #                endpoint = endpoint.endpoint.format(model=kwargs['model'])
             case APIEndpointArgType.PLATFORM_VERSION:
                 endpoint = endpoint.endpoint.format(version=kwargs['platform_version'])
             case APIEndpointArgType.VERSION:
