@@ -14,6 +14,9 @@ click = "^8.1.7"
 requests = "^2.31.0"
 remotezip = "^0.12.1"
 
+[tool.ruff.lint]
+extend-select = ["I"]
+
 [tool.ruff.format]
 quote-style = "single"
 

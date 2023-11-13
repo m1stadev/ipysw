@@ -8,8 +8,8 @@ from .types import *  # noqa: F403
 
 
 class _API:
-    def __init__(self):
-        self._session = requests.Session()
+    def __init__(self, *, session: requests.Session):
+        self._session = session
 
     def __del__(self):
         self._session.close()
@@ -19,14 +19,22 @@ class _API:
 
 
 class Device(_API):
-    def __init__(self, *, data: dict) -> None:
-        super().__init__()
-        self._parse_data(data)
+    def __init__(
+        self, *, identifier: Optional[str], session: Optional[requests.Session] = None
+    ) -> None:
+        if session is None:
+            session = requests.Session()
 
-    def _parse_data(self, data: dict) -> None:
-        self._name = data['name']
-        self._identifier = data['identifier']
-        self._boards = [BoardVariant(*board.values()) for board in data['boards']]  # noqa: F405
+        super().__init__(session=session)
+
+        if identifier is None:
+            raise ValueError('A device identifier must be provided.')
+
+        api_data = self.json_request(get_url(GET_DEVICE_INFO, identifier=identifier))  # noqa: F405
+
+        self._name = api_data['name']
+        self._identifier = api_data['identifier']
+        self._boards = [BoardVariant(*board.values()) for board in api_data['boards']]  # noqa: F405
 
     @property
     def name(self) -> str:
@@ -41,40 +49,36 @@ class Device(_API):
         return self._boards
 
     @classmethod
-    def search(cls, *, name: Optional[str] = None, identifier: Optional[str] = None):
-        if name is None and identifier is None:
-            raise ValueError('Either device name or identifier must be provided.')
+    def search(
+        cls, *, name: Optional[str] = None, session: Optional[requests.Session] = None
+    ):
+        if name is None:
+            raise ValueError('Ddevice name must be provided.')
 
-        api_data = requests.get(get_url(GET_DEVICES)).json()  # noqa: F405
+        if session is None:
+            session = requests.Session()
 
-        if name:
-            devices = [
-                device
-                for device in api_data
-                if name.casefold() == device['name'].casefold()
-                or name.casefold() in device['name'].casefold()
-            ]
-            match len(devices):
-                case 0:
-                    raise ValueError(f'No device found with name {name}')
-                case 1:
-                    device = devices[0]
-                case _:
-                    raise ValueError(
-                        f'Multiple devices found with name {name} ({len(devices)}): {", ".join([device['name'] for device in devices])}'
-                    )
+        api_data = session.get(get_url(GET_DEVICES)).json()  # noqa: F405
 
-        elif identifier:
-            try:
-                device = next(
-                    device
-                    for device in api_data
-                    if identifier.casefold() == device['identifier'].casefold()
+        # TODO: Move to fuzzy-searching strings and choosing the closest device
+        devices = [
+            device
+            for device in api_data
+            if (name.casefold() == device['name'].casefold())
+            or (name.casefold() in device['name'].casefold())
+        ]
+
+        match len(devices):
+            case 0:
+                raise ValueError(f'No device found with name {name}')
+            case 1:
+                device = devices[0]
+            case _:
+                raise ValueError(
+                    f'Multiple devices found with name {name} ({len(devices)}): {", ".join([device["name"] for device in devices])}'
                 )
-            except StopIteration:
-                raise ValueError(f'No device found with identifier {identifier}')
 
-        return cls(data=device)
+        return cls(identifier=device['identifier'], session=session)
 
     def get_firmware(
         self, *, version: Optional[str] = None, buildid: Optional[str] = None
@@ -84,7 +88,7 @@ class Device(_API):
 
         if version:
             api_data = self.json_request(
-                get_url(GET_DEVICE_IPSWS, identifier=self.identifier)  # noqa: F405
+                get_url(GET_DEVICE_INFO, identifier=self.identifier)  # noqa: F405
             )
 
             firmwares = [

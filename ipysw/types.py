@@ -1,5 +1,5 @@
-from enum import IntEnum
 from dataclasses import dataclass
+from enum import IntEnum
 
 BASE_API = 'https://api.ipsw.me/v4'
 
@@ -33,7 +33,7 @@ class APIEndpoint:
 GET_MODEL_IDENTIFIER = APIEndpoint('/model/{model}', APIEndpointArgType.MODEL)
 GET_DEVICES = APIEndpoint('/devices', APIEndpointArgType.NONE)
 
-GET_DEVICE_IPSWS = APIEndpoint('/device/{identifier}', APIEndpointArgType.IDENTIFIER)
+GET_DEVICE_INFO = APIEndpoint('/device/{identifier}', APIEndpointArgType.IDENTIFIER)
 GET_IPSW_DOWNLOAD = APIEndpoint(
     '/ipsw/download/{identifier}/{buildid}', APIEndpointArgType.IDENTIFIER_BUILDID
 )
