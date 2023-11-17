@@ -61,7 +61,6 @@ class Device(_API):
 
         api_data = session.get(get_url(GET_DEVICES)).json()  # noqa: F405
 
-        # TODO: Move to fuzzy-searching strings and choosing the closest device
         devices = [
             device
             for device in api_data
@@ -104,7 +103,7 @@ class Device(_API):
                     firmware = firmwares[0]
                 case _:
                     raise ValueError(
-                        f'Multiple firmwares found with version {version} ({len(firmwares)})'
+                        f'Multiple firmwares found with version {version} ({len(firmwares)}): {", ".join([firmware["buildid"] for firmware in firmwares])}'
                     )
 
         elif buildid:
