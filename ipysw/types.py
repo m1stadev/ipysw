@@ -25,6 +25,13 @@ class BoardVariant:
 
 
 @dataclass(frozen=True)
+class FirmwareChecksums:
+    sha1: str
+    sha256: str
+    md5: str
+
+
+@dataclass(frozen=True)
 class APIEndpoint:
     endpoint: str
     arg_type: APIEndpointArgType
