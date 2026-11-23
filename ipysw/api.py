@@ -1,11 +1,10 @@
 from datetime import datetime
-from typing import Optional
 
 import requests
 from ipsw_parser.ipsw import IPSW
 from remotezip import RemoteZip
 
-from .types import *  # noqa: F403
+from .types import *
 
 
 class _API:
@@ -21,7 +20,7 @@ class _API:
 
 class Device(_API):
     def __init__(
-        self, *, identifier: Optional[str], session: Optional[requests.Session] = None
+        self, *, identifier: str | None, session: requests.Session | None = None
     ) -> None:
         if session is None:
             session = requests.Session()
@@ -31,11 +30,11 @@ class Device(_API):
         if identifier is None:
             raise ValueError('A device identifier must be provided.')
 
-        api_data = self.json_request(get_url(GET_DEVICE_INFO, identifier=identifier))  # noqa: F405
+        api_data = self.json_request(get_url(GET_DEVICE_INFO, identifier=identifier))
 
         self._name = api_data['name']
         self._identifier = api_data['identifier']
-        self._boards = [BoardVariant(*board.values()) for board in api_data['boards']]  # noqa: F405
+        self._boards = [BoardVariant(*board.values()) for board in api_data['boards']]
 
     @property
     def name(self) -> str:
@@ -46,12 +45,12 @@ class Device(_API):
         return self._identifier
 
     @property
-    def boards(self) -> list[BoardVariant]:  # noqa: F405
+    def boards(self) -> list[BoardVariant]:
         return self._boards
 
     @classmethod
     def search(
-        cls, *, name: Optional[str] = None, session: Optional[requests.Session] = None
+        cls, *, name: str | None = None, session: requests.Session | None = None
     ):
         if name is None:
             raise ValueError('Ddevice name must be provided.')
@@ -59,7 +58,7 @@ class Device(_API):
         if session is None:
             session = requests.Session()
 
-        api_data = session.get(get_url(GET_DEVICES)).json()  # noqa: F405
+        api_data = session.get(get_url(GET_DEVICES)).json()
 
         devices = [
             device
@@ -80,15 +79,13 @@ class Device(_API):
 
         return cls(identifier=device['identifier'], session=session)
 
-    def get_firmware(
-        self, *, version: Optional[str] = None, buildid: Optional[str] = None
-    ):
+    def get_firmware(self, *, version: str | None = None, buildid: str | None = None):
         if version is None and buildid is None:
             raise ValueError('Either firmware version or buildid must be provided.')
 
         if version:
             api_data = self.json_request(
-                get_url(GET_DEVICE_INFO, identifier=self.identifier)  # noqa: F405
+                get_url(GET_DEVICE_INFO, identifier=self.identifier)
             )
 
             firmwares = [
@@ -108,7 +105,7 @@ class Device(_API):
 
         elif buildid:
             firmware = self.json_request(
-                get_url(GET_IPSW_INFO, identifier=self.identifier, buildid=buildid)  # noqa: F405
+                get_url(GET_IPSW_INFO, identifier=self.identifier, buildid=buildid)
             )
 
         return Firmware(device=self, data=firmware)
@@ -125,7 +122,7 @@ class Firmware(_API):
         self._size = data['filesize']
         self._released = datetime.strptime(data['releasedate'], '%Y-%m-%dT%H:%M:%SZ')
         self._uploaded = datetime.strptime(data['uploaddate'], '%Y-%m-%dT%H:%M:%SZ')
-        self._checksums = FirmwareChecksums(  # noqa: F405
+        self._checksums = FirmwareChecksums(
             sha1=data['sha1sum'], sha256=data['sha256sum'], md5=data['md5sum']
         )
         self._url = data['url']
@@ -135,7 +132,7 @@ class Firmware(_API):
         return self._buildid
 
     @property
-    def checksums(self) -> FirmwareChecksums:  # noqa: F405
+    def checksums(self) -> FirmwareChecksums:
         return self._checksums
 
     @property
@@ -154,8 +151,8 @@ class Firmware(_API):
     def signed(self) -> bool:
         # TODO: Check via TSS, ipsw.me isn't always accurate
         api_data = self.json_request(
-            get_url(  # noqa: F405
-                GET_IPSW_INFO,  # noqa: F405
+            get_url(
+                GET_IPSW_INFO,
                 identifier=self.device.identifier,
                 buildid=self.buildid,
             )
